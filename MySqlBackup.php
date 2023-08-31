@@ -204,8 +204,16 @@ class MySqlBackupLite
 
             $row[$i] = str_replace("\n","\\n", addslashes($row[$i]));
 
-            $this->sqlString .= (isset($row[$i])) ? '"'.$row[$i].'"' : '""';
-      
+            if ($row[$i] == 'true' or $row[$i] == 'false' or preg_match('/^-?[1-9][0-9]*$/', $row[$i]) or $row[$i] == 'NULL' or $row[$i] == 'null') {
+                $this->sqlString .= $row[$i];
+            }
+            elseif (empty($row[$i])) {
+                $this->sqlString .= 'NULL' ;
+            }
+            else {
+                $this->sqlString .= '"'.$row[$i].'"' ;
+            }
+
             if ($i < ($this->tableFieldCount-1)) {
                 $this->sqlString.= ',';
             }
