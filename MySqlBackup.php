@@ -251,10 +251,22 @@ class MySqlBackupLite
             }
         }
 
-        if (!$backupFile = fopen($this->fileDir . $this->fileName, "w+")) {
-            throw new Exception('Imposible to create file.');
+        if ($this->fileCompression) {
+            if (! $backupFile = gzopen($this->fileDir . $this->fileName.'.gz', "w9") ) {
+                throw new Exception('Imposible to create file: '.$this->fileDir.$this->fileName.'gz');
+            }
+        } else {
+            if (! $backupFile = fopen($this->fileDir . $this->fileName, "w+") ) {
+                throw new Exception('Imposible to create file: '.$this->fileDir.$this->fileName);
+            }
         }
-        fwrite($backupFile, $this->sqlString);
+
+        if ($this->fileCompression) {
+            gzwrite($backupFile, $this->sqlString);
+        } else {
+            fwrite($backupFile, $this->sqlString);
+        }
+
         fclose($backupFile);
     }
 }
