@@ -102,7 +102,7 @@ class MySqlBackupLite
 
     public function setFileDir($dir)
     {
-        $this->fileDir = $dir;
+        $this->fileDir = (substr($dir, -1)=='/') ? $dir : $dir.'/';
     }
 
     public function setFileCompression($compression)
