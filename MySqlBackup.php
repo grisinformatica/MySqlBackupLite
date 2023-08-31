@@ -245,6 +245,12 @@ class MySqlBackupLite
 
     public function saveToFile()
     {
+        if (! is_dir($this->fileDir)) {
+            if (! mkdir($this->fileDir, 0777, TRUE)) {
+                throw new Exception('Path does not exist, imposible to create directory: '.$this->fileDir);
+            }
+        }
+
         if (!$backupFile = fopen($this->fileDir . $this->fileName, "w+")) {
             throw new Exception('Imposible to create file.');
         }
