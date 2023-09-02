@@ -30,6 +30,8 @@
 
 class MySqlBackupLite
 {
+    const VERSION = '0.0.2';
+
     private $host;
     private $user;
     private $pass;
@@ -71,7 +73,6 @@ class MySqlBackupLite
         $this->getTables();
         $this->generateSqlHeader();
         $this->createTableStaments();
-        $this->insertStaments();
         $this->generateSqlFooter();
     }
 
@@ -127,15 +128,26 @@ class MySqlBackupLite
 
     private function generateSqlHeader()
     {
-        $this->sqlString  = 'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";' . "\r\n";
+        $this->sqlString  = '-- MySqlBackupLite SQL Dump'. "\r\n";
+        $this->sqlString .= '-- versión '.self::VERSION. "\r\n";
+        $this->sqlString .= '-- https://github.com/grisinformatica/MySqlBackupLite'. "\r\n";
+        $this->sqlString .= '--'. "\r\n";
+        $this->sqlString .= '-- Servidor: '.$_SERVER['SERVER_NAME']. "\r\n";
+        $this->sqlString .= '-- Tiempo de generación: '.date('d-m-Y \a \l\a\s H:i:s') . "\r\n";
+        $this->sqlString .= '-- Versión del servidor: '.$_SERVER['SERVER_SOFTWARE'].'-'.$this->mySqli->server_version. "\r\n";
+        $this->sqlString .= '-- Versión de PHP: '.phpversion(). "\r\n\r\n";
+
+        $this->sqlString .= 'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";' . "\r\n";
+        $this->sqlString .= 'START TRANSACTION;' . "\r\n";
         $this->sqlString .= 'SET time_zone = "' . $this->timeZone . '";' . "\r\n\r\n\r\n";
+
         $this->sqlString .= '/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;' . "\r\n";
         $this->sqlString .= '/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;' . "\r\n";
         $this->sqlString .= '/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;' . "\r\n";
-        $this->sqlString .= '/*!40101 SET NAMES utf8 */;' . "\r\n";
+        $this->sqlString .= '/*!40101 SET NAMES utf8 */;' . "\r\n\r\n";
         $this->sqlString .= '--' . "\r\n";
-        $this->sqlString .= '-- Database: `' . $this->name . '`' . "\r\n";
-        $this->sqlString .= '--' . "\r\n\r\n\r\n";
+        $this->sqlString .= '-- Base de datos: `' . $this->name . '`' . "\r\n";
+        $this->sqlString .= '--' . "\r\n\r\n";
     
         return;
     }
@@ -144,6 +156,7 @@ class MySqlBackupLite
     {
         foreach ($this->arrayTables as $table) {
             $this->sqlCreateTableStament($table);
+            $this->sqlInsertStaments($table);
         }
     }
 
@@ -151,7 +164,12 @@ class MySqlBackupLite
     {
         $res = $this->mySqli->query('SHOW CREATE TABLE '.$table);
         $temp = $res->fetch_row();
-        $this->sqlString .= "\n\n" . str_ireplace('CREATE TABLE `','CREATE TABLE IF NOT EXISTS `', $temp[1]) . ";\n\n";
+
+        $this->sqlString .= '-- --------------------------------------------------------' . "\r\n\r\n";
+        $this->sqlString .= '--' . "\r\n";
+        $this->sqlString .= '-- Estructura de tabla para la tabla `'.$table.'`' . "\r\n";
+        $this->sqlString .= '--'  . "\r\n";
+        $this->sqlString .= "\r\n" . str_ireplace('CREATE TABLE `','CREATE TABLE IF NOT EXISTS `', $temp[1]) . ";\n\n";
     }
 
     private function insertStaments()
@@ -166,9 +184,13 @@ class MySqlBackupLite
     {
         $this->getTableData($table);
 
-        if ($this->tableFieldCount == 0) {
+        if ($this->tableNumberOfRows == 0) {
             return;
         }
+
+        $this->sqlString .= '--' . "\r\n";
+        $this->sqlString .= '-- Volcado de datos para la tabla `'.$table.'`'  . "\r\n";
+        $this->sqlString .= '--' . "\r\n";
 
         $i = 0;
         while ($row = $this->queryResult->fetch_row()) {
