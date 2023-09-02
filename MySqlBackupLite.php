@@ -4,15 +4,14 @@
 *
 * MySql Backup Lite Class
 *
-* @author     Andres Hierro
-* @copyright  2019 Andres Hierro
+* @author     Gonzalo Iglesias
 * @license    http://www.apache.org/licenses/LICENSE-2.0  Apache License, Version 2.0
-* @version    0.0.1
-* @link       http://ahierro.es/
+* @version    0.0.2
+* @link       https://grisinformatica.com/
 *
 *
 *
-* Copyright 2019 Andrés Hierro
+* Copyright 2023 Gonzalo Iglesias
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
