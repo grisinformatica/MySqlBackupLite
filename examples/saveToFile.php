@@ -1,6 +1,6 @@
 <?php
 
-include('MySqlBackup.php');
+include('MySqlBackupLite.php');
 
 $arrayDbConf['host'] = 'dbHost';
 $arrayDbConf['user'] = 'dbUser';

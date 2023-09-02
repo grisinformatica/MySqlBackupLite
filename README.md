@@ -21,7 +21,7 @@ Forked from [ahierrohdez / MySqlBackupLite](https://github.com/ahierrohdez/MySql
 Stores a SQL backup file to a writable folder
 
 ```php
-include('MySqlBackup.php');
+include('MySqlBackupLite.php');
 
 $arrayDbConf['host'] = 'dbHost';
 $arrayDbConf['user'] = 'dbUser';
