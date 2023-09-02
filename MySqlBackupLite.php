@@ -45,9 +45,26 @@ class MySqlBackupLite
 
     private $mySqli;
     private $sqlString          = "";
+
+    /**
+     * Array of tables to backup.
+     * If left blank, all tables will be backuped
+     * ex: ['myTable1', 'myTable2']
+     */
     private $arrayTables        = array();
-    private $arrayIgnoreTables  = array();
-    private $arrayNoDataTables  = array();
+
+    /**
+     * Array of tables to ignore in backup
+     * ex: ['myTable1', 'myTable2']
+     */
+    private $arrayIgnoreTables  = [];
+
+    /**
+     * Array of tables to ignore data
+     * Table structure will be backed up, but no data
+     * ex: ['myTable1', 'myTable2']
+     */
+    private $arrayEmptyTables   = [];
 
     private $tableFieldCount    = 0;
     private $tableNumberOfRows  = 0;
@@ -123,9 +140,9 @@ class MySqlBackupLite
         $this->arrayIgnoreTables = $arrayIgnoreTables;
     }
 
-    public function setNoDataTables($arrayNoDataTables)
+    public function setEmptyTables($arrayEmptyTables)
     {
-        $this->arrayNoDataTables = $arrayNoDataTables;
+        $this->arrayEmptyTables = $arrayEmptyTables;
     }
 
     private function connectMySql()
@@ -176,7 +193,7 @@ class MySqlBackupLite
     {
         foreach ($this->arrayTables as $table) {
             $this->sqlCreateTableStament($table);
-            if (! in_array($table, $this->arrayNoDataTables))
+            if (! in_array($table, $this->arrayEmptyTables))
                 $this->sqlInsertStaments($table);
         }
     }
