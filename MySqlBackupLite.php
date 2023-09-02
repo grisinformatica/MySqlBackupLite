@@ -32,6 +32,8 @@ class MySqlBackupLite
 {
     const VERSION = '0.0.2';
 
+    const ROWS_PER_INSERT = 100; // 100
+
     private $host;
     private $user;
     private $pass;
@@ -229,7 +231,7 @@ class MySqlBackupLite
             
             $i++;
             
-            $this->sqlString .= (($i != 0) && ($i % 100 == 0) || ($i == $this->tableNumberOfRows)) ? ";" : ",";
+            $this->sqlString .= (($i != 0) && ($i % self::ROWS_PER_INSERT == 0) || ($i == $this->tableNumberOfRows)) ? ";" : ",";
         }
         $this->sqlString .= "\n\n\n";
     }
@@ -243,7 +245,7 @@ class MySqlBackupLite
 
     private function insertResultHeader($table, $currentRowNumber)
     {
-        if ($currentRowNumber % 100 == 0 || $currentRowNumber == 0 ) {
+        if ($currentRowNumber % self::ROWS_PER_INSERT == 0 || $currentRowNumber == 0 ) {
             $this->sqlString .= "\nINSERT INTO " . $table . " VALUES";
         }
     }
