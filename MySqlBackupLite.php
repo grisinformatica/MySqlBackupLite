@@ -37,19 +37,20 @@ class MySqlBackupLite
     private $pass;
     private $name;
 
-    private $fileName = "mySqlBackup.sql";
-    private $fileDir = "./";
-    private $fileCompression = false;
+    private $fileName           = "mySqlBackup.sql";
+    private $fileDir            = "./";
+    private $fileCompression    = false;
 
-    private $timeZone = '+00:00';
+    private $timeZone           = '+00:00';
 
     private $mySqli;
-    private $sqlString = "";
-    private $arrayTables;
-    private $arrayIgnoreTables;
+    private $sqlString          = "";
+    private $arrayTables        = array();
+    private $arrayIgnoreTables  = array();
+    private $arrayNoDataTables  = array();
 
-    private $tableFieldCount = 0;
-    private $tableNumberOfRows = 0;
+    private $tableFieldCount    = 0;
+    private $tableNumberOfRows  = 0;
     private $queryResult;
 
     public function __construct(array $arrayConnConfig)
@@ -122,6 +123,11 @@ class MySqlBackupLite
         $this->arrayIgnoreTables = $arrayIgnoreTables;
     }
 
+    public function setNoDataTables($arrayNoDataTables)
+    {
+        $this->arrayNoDataTables = $arrayNoDataTables;
+    }
+
     private function connectMySql()
     {
         $this->mySqli = new mysqli($this->host, $this->user, $this->pass, $this->name);
@@ -170,7 +176,8 @@ class MySqlBackupLite
     {
         foreach ($this->arrayTables as $table) {
             $this->sqlCreateTableStament($table);
-            $this->sqlInsertStaments($table);
+            if (! in_array($table, $this->arrayNoDataTables))
+                $this->sqlInsertStaments($table);
         }
     }
 
@@ -184,14 +191,6 @@ class MySqlBackupLite
         $this->sqlString .= '-- Estructura de tabla para la tabla `'.$table.'`' . "\r\n";
         $this->sqlString .= '--'  . "\r\n";
         $this->sqlString .= "\r\n" . str_ireplace('CREATE TABLE `','CREATE TABLE IF NOT EXISTS `', $temp[1]) . ";\n\n";
-    }
-
-    private function insertStaments()
-    {
-        foreach ($this->arrayTables as $table)
-        {
-            $this->sqlInsertStaments($table);
-        }
     }
 
     private function sqlInsertStaments($table)
