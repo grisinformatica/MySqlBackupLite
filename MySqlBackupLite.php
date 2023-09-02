@@ -46,6 +46,7 @@ class MySqlBackupLite
     private $mySqli;
     private $sqlString = "";
     private $arrayTables;
+    private $arrayIgnoreTables;
 
     private $tableFieldCount = 0;
     private $tableNumberOfRows = 0;
@@ -111,6 +112,16 @@ class MySqlBackupLite
         $this->fileCompression = $compression;
     }
 
+    public function setTables($arrayTables)
+    {
+        $this->arrayTables = $arrayTables;
+    }
+
+    public function setIgnoreTables($arrayIgnoreTables)
+    {
+        $this->arrayIgnoreTables = $arrayIgnoreTables;
+    }
+
     private function connectMySql()
     {
         $this->mySqli = new mysqli($this->host, $this->user, $this->pass, $this->name);
@@ -120,9 +131,12 @@ class MySqlBackupLite
 
     private function getTables()
     {
-        $queryTables = $this->mySqli->query('SHOW TABLES');
-        while ($row = $queryTables->fetch_row()) {
-            $this->arrayTables[] = $row[0];
+        if (! $this->arrayTables) {
+            $queryTables = $this->mySqli->query('SHOW TABLES');
+            while ($row = $queryTables->fetch_row()) {
+                if (! in_array($row[0], $this->arrayIgnoreTables))
+                    $this->arrayTables[] = $row[0];
+            }
         }
     }
 
