@@ -29,15 +29,16 @@
 
 class MySqlBackupLite
 {
-    const VERSION = '0.0.2';
-
-    const ROWS_PER_INSERT = 100; // 100
+    const VERSION               = '0.0.2';
+    const LANGUAGE              = 'es';     // Default: 'en'
+    const ROWS_PER_INSERT       = 100;      // Default: 100
 
     private $host;
     private $user;
     private $pass;
     private $name;
 
+    private $lang;
     private $fileName           = "mySqlBackup.sql";
     private $fileDir            = "./";
     private $fileCompression    = false;
@@ -73,18 +74,23 @@ class MySqlBackupLite
 
     public function __construct(array $arrayConnConfig)
     {
+        if (! require __DIR__ . '/language/'.self::LANGUAGE.'.php')
+            throw new Exception('Missing language file.');
+
+        $this->setLanguage($lang);
+
         if (
             (!isset($arrayConnConfig['host'])) ||
             (!isset($arrayConnConfig['user'])) ||
             (!isset($arrayConnConfig['pass'])) ||
             (!isset($arrayConnConfig['name']))
         ) {
-            throw new Exception('Missing connection data.');
-      }
-      $this->setHost($arrayConnConfig['host']);
-      $this->setUser($arrayConnConfig['user']);
-      $this->setPass($arrayConnConfig['pass']);
-      $this->setName($arrayConnConfig['name']);
+            throw new Exception($lang['missingConnectionData']);
+        }
+        $this->setHost($arrayConnConfig['host']);
+        $this->setUser($arrayConnConfig['user']);
+        $this->setPass($arrayConnConfig['pass']);
+        $this->setName($arrayConnConfig['name']);
     }
 
     public function backUp()
@@ -94,6 +100,11 @@ class MySqlBackupLite
         $this->generateSqlHeader();
         $this->createTableStaments();
         $this->generateSqlFooter();
+    }
+
+    private function setLanguage($lang)
+    {
+        $this->lang = $lang;
     }
 
     private function setHost($host)
@@ -167,13 +178,13 @@ class MySqlBackupLite
     private function generateSqlHeader()
     {
         $this->sqlString  = '-- MySqlBackupLite SQL Dump'. "\r\n";
-        $this->sqlString .= '-- versión '.self::VERSION. "\r\n";
+        $this->sqlString .= '-- '.$this->lang['version'].' '.self::VERSION. "\r\n";
         $this->sqlString .= '-- https://github.com/grisinformatica/MySqlBackupLite'. "\r\n";
         $this->sqlString .= '--'. "\r\n";
-        $this->sqlString .= '-- Servidor: '.$_SERVER['SERVER_NAME']. "\r\n";
-        $this->sqlString .= '-- Tiempo de generación: '.date('d-m-Y \a \l\a\s H:i:s') . "\r\n";
-        $this->sqlString .= '-- Versión del servidor: '.$_SERVER['SERVER_SOFTWARE'].'-'.$this->mySqli->server_version. "\r\n";
-        $this->sqlString .= '-- Versión de PHP: '.phpversion(). "\r\n\r\n";
+        $this->sqlString .= '-- '.$this->lang['host'].': '.$_SERVER['SERVER_NAME']. "\r\n";
+        $this->sqlString .= '-- '.$this->lang['generationTime'].': '.date('d-m-Y \a \l\a\s H:i:s') . "\r\n";
+        $this->sqlString .= '-- '.$this->lang['serverVersion'].': '.$_SERVER['SERVER_SOFTWARE'].'-'.$this->mySqli->server_version. "\r\n";
+        $this->sqlString .= '-- '.$this->lang['phpVersion'].': '.phpversion(). "\r\n\r\n";
 
         $this->sqlString .= 'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";' . "\r\n";
         $this->sqlString .= 'START TRANSACTION;' . "\r\n";
@@ -184,7 +195,7 @@ class MySqlBackupLite
         $this->sqlString .= '/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;' . "\r\n";
         $this->sqlString .= '/*!40101 SET NAMES utf8 */;' . "\r\n\r\n";
         $this->sqlString .= '--' . "\r\n";
-        $this->sqlString .= '-- Base de datos: `' . $this->name . '`' . "\r\n";
+        $this->sqlString .= '-- '.$this->lang['database'].': `' . $this->name . '`' . "\r\n";
         $this->sqlString .= '--' . "\r\n\r\n";
     
         return;
@@ -206,7 +217,7 @@ class MySqlBackupLite
 
         $this->sqlString .= '-- --------------------------------------------------------' . "\r\n\r\n";
         $this->sqlString .= '--' . "\r\n";
-        $this->sqlString .= '-- Estructura de tabla para la tabla `'.$table.'`' . "\r\n";
+        $this->sqlString .= '-- '.$this->lang['tableStructure'].' '.$this->lang['forTable'].' `'.$table.'`' . "\r\n";
         $this->sqlString .= '--'  . "\r\n";
         $this->sqlString .= "\r\n" . str_ireplace('CREATE TABLE `','CREATE TABLE IF NOT EXISTS `', $temp[1]) . ";\n\n";
     }
@@ -220,7 +231,7 @@ class MySqlBackupLite
         }
 
         $this->sqlString .= '--' . "\r\n";
-        $this->sqlString .= '-- Volcado de datos para la tabla `'.$table.'`'  . "\r\n";
+        $this->sqlString .= '-- '.$this->lang['dumpingData'].' '.$this->lang['forTable'].' `'.$table.'`'  . "\r\n";
         $this->sqlString .= '--' . "\r\n";
 
         $i = 0;
@@ -300,17 +311,17 @@ class MySqlBackupLite
     {
         if (! is_dir($this->fileDir)) {
             if (! mkdir($this->fileDir, 0777, TRUE)) {
-                throw new Exception('Path does not exist, imposible to create directory: '.$this->fileDir);
+                throw new Exception($this->lang['pathDoesNotExist'].$this->fileDir);
             }
         }
 
         if ($this->fileCompression) {
             if (! $backupFile = gzopen($this->fileDir . $this->fileName.'.gz', "w9") ) {
-                throw new Exception('Imposible to create file: '.$this->fileDir.$this->fileName.'gz');
+                throw new Exception($this->lang['imposibleToCreateFile'].$this->fileDir.$this->fileName.'gz');
             }
         } else {
             if (! $backupFile = fopen($this->fileDir . $this->fileName, "w+") ) {
-                throw new Exception('Imposible to create file: '.$this->fileDir.$this->fileName);
+                throw new Exception($this->lang['imposibleToCreateFile'].$this->fileDir.$this->fileName);
             }
         }
 

@@ -13,6 +13,7 @@ Forked from [ahierrohdez / MySqlBackupLite](https://github.com/ahierrohdez/MySql
 * Select which tables to back up (all by default)
 * Select which tables to skip in the backup
 * Select which tables will be backed up only structure (no data)
+* Multilanguage: English (default), Español
 
 ## Examples
 
